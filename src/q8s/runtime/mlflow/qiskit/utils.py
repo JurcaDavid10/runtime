@@ -118,6 +118,15 @@ def _patch_qiskit(
         circuit: QuantumCircuit = args[0][0] if isinstance(args[0], list) else args[0]
 
         ctx = _current_context.get()
+        if ctx is None or not isinstance(ctx, QProvRecord):
+            raise RuntimeError(
+                "No active autolog context. Please call transpile() first."
+            )
+
+        # Start each compilation with a fresh pass history.
+        # Prevent passes from previous MLflow runs accumulating.
+        ctx.compilation.passes.clear()
+
 
         ctx.circuit = QuantumCircuitProvenance(
             circuit_id=str(id(circuit)),
@@ -129,10 +138,6 @@ def _patch_qiskit(
             gate_counts=dict(circuit.count_ops()),
         )
 
-        if ctx is None or not isinstance(ctx, QProvRecord):
-            raise RuntimeError(
-                "No active autolog context. Please call transpile() first."
-            )
 
         if not silent:
             logger.info("Logging Qiskit transpilation run to MLflow.")

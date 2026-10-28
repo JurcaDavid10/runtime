@@ -148,3 +148,62 @@ def plot_transpilation_timeline(passes, figsize=(16, 8)):
     plt.tight_layout(rect=(0, 0.12, 1, 0.95))
 
     return fig
+
+
+
+def plot_resource_profiles(passes, figsize=(10, 4)):
+    """Generate resource evolution figures from compiler passes."""
+
+    metrics = {
+        "depth": "Circuit depth",
+        "two_qubit_gate_count": "Two-qubit gate count",
+        "two_qubit_depth": "Two-qubit depth",
+    }
+
+    ordered_passes = sorted(
+        passes,
+        key=lambda p: p.pass_index,
+    )
+
+    profiles = []
+
+    for compiler_pass in ordered_passes:
+        profile = compiler_pass.pass_metadata.get(
+            "resource_profile"
+        )
+
+        if isinstance(profile, dict):
+            profiles.append((compiler_pass, profile))
+
+    figures = {}
+
+    for metric, label in metrics.items():
+        points = [
+            (compiler_pass.pass_index, profile[metric])
+            for compiler_pass, profile in profiles
+            if isinstance(profile.get(metric), (int, float))
+        ]
+
+        if not points:
+            continue
+
+        x_values, y_values = zip(*points)
+
+        fig, ax = plt.subplots(figsize=figsize)
+
+        ax.plot(
+            x_values,
+            y_values,
+            marker="o",
+            markersize=3,
+        )
+
+        ax.set_title(f"{label} across compilation passes")
+        ax.set_xlabel("Recorded compiler pass index")
+        ax.set_ylabel(label)
+        ax.grid(alpha=0.3)
+
+        fig.tight_layout()
+        figures[metric] = fig
+
+    return figures

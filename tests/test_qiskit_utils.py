@@ -162,7 +162,11 @@ class TestPatchQiskit(unittest.TestCase):
                     patch.object(
                         utils, "find_stage_by_id", return_value="routing"
                     ) as find,
-                ):
+                    patch.object(
+                    utils,"analyze_dag", return_value={"num_qubits": 2, "two_qubit_gate_count": 2, "two_qubit_depth": 2,
+                    },
+                    ) as analyze,
+                    ):
                     result = self.patches[utils.StagedPassManager, "run"](
                         original, manager, circuits, num_processes=1
                     )
@@ -171,6 +175,7 @@ class TestPatchQiskit(unittest.TestCase):
                         manager, circuits, num_processes=1, callback=callback
                     )
                     callback(transpiler_pass, dag, 0.25, {}, 2)
+                    analyze.assert_called_once_with(dag)
                     process.assert_called_once_with(manager)
                     find.assert_called_once_with(stages, id(transpiler_pass))
 
@@ -195,7 +200,9 @@ class TestPatchQiskit(unittest.TestCase):
                 self.assertEqual(recorded_pass.pass_duration_s, 0.25)
                 self.assertEqual(
                     recorded_pass.pass_metadata,
-                    {"depth": 3, "size": 4, "stage": "routing"},
+                    {"depth": 3, "size": 4, "stage": "routing", "resource_profile": {"num_qubits": 2, "two_qubit_gate_count": 2, "two_qubit_depth": 2,
+                    },
+                }
                 )
                 self.context_factory.return_value.get.return_value = None
                 with self.assertRaisesRegex(RuntimeError, "No active autolog context"):

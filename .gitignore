@@ -1,9 +1,27 @@
-__pycache__/
-*.egg-info/
+# Python virtual environment and cache
 .venv/
+__pycache__/
+*.pyc
+.pytest_cache/
 
+# Python package metadata
+*.egg-info/
+
+# MLflow experiments and artifacts
+mlruns/
 mlartifacts/
 mlflow.db
+mlflow.db-*
 
+# Generated resource visualizations
+resource_visualizations/
+
+# Environment variables and temporary outputs
 .envrc
+.env
+.env.*
 out.txt
+
+# IDE files
+.vscode/
+.idea/

@@ -22,6 +22,7 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Callable
 
+import matplotlib.pyplot as plt
 import mlflow
 import qiskit
 from mlflow.tracking.fluent import ActiveRun
@@ -34,13 +35,18 @@ from q8s.runtime.mlflow.qiskit.transpiler import (
     find_stage_by_id,
     process_staged_pass_manager,
 )
-from q8s.runtime.qprov.graphs import plot_transpilation_timeline
+from q8s.runtime.qprov.graphs import (
+    plot_transpilation_timeline,
+    plot_resource_profiles,
+)
 from q8s.runtime.qprov.record import (
     CompilationProvenance,
     QProvRecord,
     QuantumCircuitProvenance,
     QuantumComputerProvenance,
 )
+
+from q8s.runtime.mlflow.qiskit.resource_profiler import analyze_dag
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -292,6 +298,7 @@ def _patch_qiskit(
                 ctx.compilation.metadata["stages_pass_info"], id(pass_)
             ),
         }
+        pass_metadata["resource_profile"] = analyze_dag(dag)
 
         ctx.compilation.add_pass(
             pass_name=name,
@@ -313,6 +320,27 @@ def log_to_mlflow(record: QProvRecord):
 
         fig = plot_transpilation_timeline(list(record.compilation.passes))
         fig.savefig(transpilation_timeline, bbox_inches="tight")
+        # Generate and save custom resource profile graphs.
+        resource_figures = plot_resource_profiles(
+            record.compilation.passes
+        )
+
+        if resource_figures:
+            resource_dir = tmp / "resource_visualizations"
+            resource_dir.mkdir(exist_ok=True)
+
+            for metric_name, resource_fig in resource_figures.items():
+                output_file = resource_dir / f"{metric_name}.png"
+
+                resource_fig.savefig(
+                    output_file,
+                    dpi=160,
+                    bbox_inches="tight",
+                )
+
+                plt.close(resource_fig)
+
+        plt.close(fig)
 
         run = mlflow.active_run()
         if run is None:

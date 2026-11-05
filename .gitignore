@@ -25,3 +25,6 @@ out.txt
 # IDE files
 .vscode/
 .idea/
+
+# Generated benchmark results and comparison charts
+benchmark_outputs/

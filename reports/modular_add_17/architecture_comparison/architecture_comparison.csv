@@ -1,0 +1,5 @@
+optimization_level,baseline_compiled_qubits,optimized_compiled_qubits,baseline_compiled_depth,optimized_compiled_depth,baseline_compiled_cx_count,optimized_compiled_cx_count,baseline_compiled_two_qubit_depth,optimized_compiled_two_qubit_depth,baseline_compiled_operations,optimized_compiled_operations,baseline_compilation_wall_time_s,optimized_compilation_wall_time_s,cx_reduction_percent
+0,10,13,3809,2595,1794,1344,1725,1105,4865,4060,0.4073705999762751,0.18875269999261945,25.08361204013378
+1,10,13,3311,2100,1794,1344,1725,1105,3986,3038,1.685932699998375,2.0196701000095345,25.08361204013378
+2,10,13,3307,1664,1794,1050,1725,911,3898,2309,1.8484091999707744,3.7984773000353016,41.47157190635451
+3,10,13,3307,1664,1794,1050,1725,911,3898,2309,1.818947100022342,3.740638899966143,41.47157190635451

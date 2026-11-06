@@ -30,7 +30,7 @@ from modular_arithmetic_optimized import (
 )
 
 BASIS_GATES = ["u", "cx"]
-SEED = 42
+SEED = int(os.environ.get("QARW_TRANSPILER_SEED", "42"))
 EXPERIMENT = "QARW-Modular-Arithmetic-Benchmarks"
 BASE_DIRECTORY = Path(__file__).resolve().parent
 OUTPUT_DIRECTORY = (BASE_DIRECTORY / "benchmark_outputs" / "modular_add_17"
@@ -141,7 +141,11 @@ def benchmark_one_level(level):
             )
         })
 
-        path = OUTPUT_DIRECTORY / f"optimization_level_{level}.json"
+        path = OUTPUT_DIRECTORY / (
+                f"optimization_level_{level}_seed{SEED}.json"
+                if "QARW_TRANSPILER_SEED" in os.environ
+                else f"optimization_level_{level}.json"
+            )
         path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         mlflow.log_artifact(str(path), artifact_path="benchmark")
 
@@ -165,12 +169,29 @@ def benchmark_all():
         )
     results = []
     for level in range(4):
-        path = OUTPUT_DIRECTORY / f"optimization_level_{level}.json"
+        path = OUTPUT_DIRECTORY / (
+                f"optimization_level_{level}_seed{SEED}.json"
+                if "QARW_TRANSPILER_SEED" in os.environ
+                else f"optimization_level_{level}.json"
+            )
         results.append(json.loads(path.read_text(encoding="utf-8")))
-    columns = ["architecture", "optimization_level", "compiled_qubits",
-               "compiled_depth", "compiled_operations", "compiled_cx_count",
-               "compiled_two_qubit_depth", "compilation_wall_time_s", "mlflow_run_id"]
-    output = OUTPUT_DIRECTORY / "optimization_comparison.csv"
+    columns = [
+        "architecture",
+        "optimization_level",
+        "seed_transpiler",
+        "compiled_qubits",
+        "compiled_depth",
+        "compiled_operations",
+        "compiled_cx_count",
+        "compiled_two_qubit_depth",
+        "compilation_wall_time_s",
+        "mlflow_run_id",
+    ]
+    output = OUTPUT_DIRECTORY / (
+        f"optimization_comparison_seed{SEED}.csv"
+        if "QARW_TRANSPILER_SEED" in os.environ
+        else "optimization_comparison.csv"
+    )
     with output.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=columns, extrasaction="ignore")
         writer.writeheader()

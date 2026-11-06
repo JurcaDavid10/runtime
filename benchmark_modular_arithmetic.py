@@ -30,7 +30,7 @@ from modular_arithmetic import MODULUS, NUM_BITS, build_modular_adder_17
 
 
 BASIS_GATES = ["u", "cx"]
-SEED = 42
+SEED = int(os.environ.get("QARW_TRANSPILER_SEED", "42"))
 EXPERIMENT = "QARW-Modular-Arithmetic-Benchmarks"
 OUTPUT_DIRECTORY = Path(__file__).resolve().parent / "benchmark_outputs" / "modular_add_17"
 
@@ -93,6 +93,8 @@ def benchmark_one_level(level):
             "register_bits": NUM_BITS,
             "basis_gates": ",".join(BASIS_GATES),
             "connectivity": "all_to_all_idealized",
+            "optimization_level": level,
+            "seed_transpiler": SEED,
         })
         mlflow.log_metrics({
             "source_qubits": original.num_qubits,
@@ -149,7 +151,11 @@ def benchmark_one_level(level):
             }
         })
 
-        artifact_path = OUTPUT_DIRECTORY / f"optimization_level_{level}.json"
+        artifact_path = OUTPUT_DIRECTORY / (
+                f"optimization_level_{level}_seed{SEED}.json"
+                if "QARW_TRANSPILER_SEED" in os.environ
+                else f"optimization_level_{level}.json"
+            )
         artifact_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         mlflow.log_artifact(str(artifact_path), artifact_path="benchmark")
         # Exiting the context also lets q8s autolog save qprov_record.json
@@ -180,14 +186,23 @@ def benchmark_all_levels():
 
     results = []
     for level in range(4):
-        result_path = OUTPUT_DIRECTORY / f"optimization_level_{level}.json"
+        result_path = OUTPUT_DIRECTORY / (
+                f"optimization_level_{level}_seed{SEED}.json"
+                if "QARW_TRANSPILER_SEED" in os.environ
+                else f"optimization_level_{level}.json"
+            )
         results.append(json.loads(result_path.read_text(encoding="utf-8")))
 
-    csv_file = OUTPUT_DIRECTORY / "comparison.csv"
+    csv_file = OUTPUT_DIRECTORY / (
+        f"comparison_seed{SEED}.csv"
+        if "QARW_TRANSPILER_SEED" in os.environ
+        else "comparison.csv"
+    )
     columns = [
-        "optimization_level", "source_qubits", "source_depth",
-        "source_operations", "compiled_qubits", "compiled_depth",
-        "compiled_operations", "compiled_cx_count", "compiled_u_count",
+        "optimization_level", "seed_transpiler",
+        "source_qubits", "source_depth", "source_operations",
+        "compiled_qubits", "compiled_depth", "compiled_operations",
+        "compiled_cx_count", "compiled_u_count",
         "compiled_two_qubit_gate_count", "compiled_two_qubit_depth",
         "compilation_wall_time_s", "mlflow_run_id",
     ]

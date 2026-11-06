@@ -1,0 +1,5 @@
+architecture,optimization_level,seed_transpiler,compiled_qubits,compiled_depth,compiled_operations,compiled_cx_count,compiled_two_qubit_depth,compilation_wall_time_s,mlflow_run_id
+rccx_clean_ancilla_3,0,303,13,2595,4060,1344,1105,0.14680039999075234,c75c2c134ee0453595f1ff58eb0d26a7
+rccx_clean_ancilla_3,1,303,13,2100,3038,1344,1105,1.0991812000283971,865e79a1e1db468a8318df192c89c087
+rccx_clean_ancilla_3,2,303,13,1664,2309,1050,911,3.4892727999249473,d12d8f9dc07f46479f5b64e91f49d376
+rccx_clean_ancilla_3,3,303,13,1664,2309,1050,911,3.9379158000228927,ee4f58f722ba4fa4b0b95ce0a6e1a513

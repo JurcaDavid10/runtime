@@ -1,0 +1,9 @@
+architecture,topology,seed,logical_qubits,device_capacity_qubits,compiled_circuit_width_qubits,basis_cases_passed,min_basis_output_probability,superposition_fidelity,connectivity_check,status
+baseline,unrestricted,42,10,N/A,10,8,1.0,1.0,not_applicable,PASS
+baseline,linear_16,42,10,16,16,8,1.0,1.0,passed,PASS
+baseline,grid_4x4,42,10,16,16,8,1.0,1.0,passed,PASS
+baseline,heavy_hex_19,42,10,19,19,8,1.0,1.0,passed,PASS
+optimized_rccx,unrestricted,42,13,N/A,13,8,1.0,1.0,not_applicable,PASS
+optimized_rccx,linear_16,42,13,16,16,8,1.0,1.0,passed,PASS
+optimized_rccx,grid_4x4,42,13,16,16,8,1.0,1.0,passed,PASS
+optimized_rccx,heavy_hex_19,42,13,19,19,8,1.0,1.0,passed,PASS

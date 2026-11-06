@@ -112,6 +112,7 @@ def transpile_and_measure(source, seed: int, opt_level: int,
         basis_gates=BASIS_GATES,
         optimization_level=opt_level,
         seed_transpiler=seed,
+        qubits_initially_zero=False,
     )
     if coupling is not None:
         kwargs.update(

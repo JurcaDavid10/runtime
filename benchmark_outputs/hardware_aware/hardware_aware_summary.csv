@@ -1,0 +1,9 @@
+architecture,topology,runs,logical_qubits,device_capacity_qubits,depth_mean,depth_stdev,cx_count_mean,cx_count_stdev,two_qubit_depth_mean,two_qubit_depth_stdev,physical_qubits_touched_mean,physical_qubits_touched_stdev,compiled_circuit_width_qubits_mean,compiled_circuit_width_qubits_stdev,depth_delta_vs_unrestricted_mean,depth_delta_vs_unrestricted_stdev,cx_delta_vs_unrestricted_mean,cx_delta_vs_unrestricted_stdev,depth_change_pct_vs_unrestricted_mean,depth_change_pct_vs_unrestricted_stdev,cx_change_pct_vs_unrestricted_mean,cx_change_pct_vs_unrestricted_stdev,transpilation_seconds_mean,transpilation_seconds_stdev
+baseline,grid_4x4,5,10,16,4643.4,11.283,3314.4,21.078,2887.6,17.416,11.4,0.548,16.0,0.0,1268.4,11.283,1490.4,21.078,37.582,0.334,81.71,1.156,2.005,0.395
+baseline,heavy_hex_19,5,10,19,5577.2,26.004,4576.6,40.141,3902.6,24.674,12.8,1.643,19.0,0.0,2202.2,26.004,2752.6,40.141,65.25,0.771,150.91,2.201,2.456,0.165
+baseline,linear_16,5,10,16,6028.0,23.885,5100.2,36.017,4141.8,21.406,10.0,0.0,16.0,0.0,2653.0,23.885,3276.2,36.017,78.607,0.708,179.616,1.975,3.089,0.682
+baseline,unrestricted,5,10,,3375.0,0.0,1824.0,0.0,1759.0,0.0,,,10.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.479,0.317
+optimized_rccx,grid_4x4,5,13,16,2709.6,53.547,2305.0,71.257,1901.4,47.773,14.0,0.707,16.0,0.0,1045.6,53.547,1255.0,71.257,62.837,3.218,119.524,6.786,2.344,0.244
+optimized_rccx,heavy_hex_19,5,13,19,3051.8,67.244,2532.4,87.157,2132.2,74.416,13.6,0.548,19.0,0.0,1387.8,67.244,1482.4,87.157,83.401,4.041,141.181,8.301,2.865,0.743
+optimized_rccx,linear_16,5,13,16,3297.4,20.768,3088.2,12.696,2428.8,21.822,13.0,0.0,16.0,0.0,1633.4,20.768,2038.2,12.696,98.161,1.248,194.114,1.209,3.377,0.856
+optimized_rccx,unrestricted,5,13,,1664.0,0.0,1050.0,0.0,911.0,0.0,,,13.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.779,0.288

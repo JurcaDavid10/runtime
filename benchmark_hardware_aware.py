@@ -15,6 +15,14 @@ The benchmark reports NET changes in compiled CX count and circuit depth relativ
 to unrestricted transpilation with the same seed and gate basis. Such changes
 reflect layout, routing, and subsequent optimization; they are NOT measured
 SWAP counts or a breakdown of costs exclusively attributable to routing.
+The benchmark now also captures explicit SWAP-count changes,
+circuit-depth changes, two-qubit operation changes, and execution
+time across observed routing-related compiler passes.
+
+These measurements are collected directly from intermediate
+circuit representations using the Qiskit transpiler callback.
+They are distinct from final CX/depth differences relative
+to unrestricted compilation.
 
 The source's logical qubit count is distinct from the chosen device graph's
 capacity, the output circuit width, and the number of physical qubits that
@@ -43,6 +51,7 @@ from qiskit.transpiler import CouplingMap
 from modular_arithmetic import build_modular_adder_17
 from modular_arithmetic_optimized import build_optimized_modular_adder_17
 
+from routing_profiler import RoutingProfiler
 
 BASIS_GATES = ["u", "cx"]  # Same basis as our existing QARW benchmarks.
 EXPERIMENT = "QARW-Hardware-Aware-Modular-Benchmarks"
@@ -59,6 +68,11 @@ RAW_COLUMNS = (
     "two_qubit_depth_delta_vs_unrestricted",
     "depth_change_pct_vs_unrestricted", "cx_change_pct_vs_unrestricted",
     "connectivity_check",
+    "routing_pass_name",
+    "routing_swaps",
+    "routing_depth_delta",
+    "routing_two_qubit_ops_delta",
+    "routing_pass_seconds",
 )
 
 
@@ -106,32 +120,55 @@ def verify_connectivity(compiled, coupling: CouplingMap) -> None:
             )
 
 
+
 def transpile_and_measure(source, seed: int, opt_level: int,
                           coupling: CouplingMap | None = None):
+    routing_probe = (
+        RoutingProfiler() if coupling is not None else None
+    )
+
     kwargs = dict(
         basis_gates=BASIS_GATES,
         optimization_level=opt_level,
         seed_transpiler=seed,
         qubits_initially_zero=False,
     )
+
     if coupling is not None:
         kwargs.update(
             coupling_map=coupling,
             layout_method="sabre",
             routing_method="sabre",
+            callback=routing_probe,
         )
+
     started = time.perf_counter()
     compiled = transpile(source, **kwargs)
     elapsed = time.perf_counter() - started
+
     if coupling is not None:
         verify_connectivity(compiled, coupling)
+
     result = circuit_metrics(compiled)
     result["transpilation_seconds"] = round(elapsed, 5)
+
+    if routing_probe is not None:
+        result.update(routing_probe.metrics())
+    else:
+        result.update({
+            "routing_pass_name": None,
+            "routing_swaps": None,
+            "routing_depth_delta": None,
+            "routing_two_qubit_ops_delta": None,
+            "routing_pass_seconds": None,
+        })
+
     return result
 
 
+
 def create_row(arch: str, topology: str, seed: int, level: int, logical: int,
-               available: int | None, result: dict, reference: dict) -> dict:
+               available: int | None, result: dict, reference: dict, ) -> dict:
     """Produce one well-labeled trial row.
 
     'unrestricted' has no device capacity or physical-qubit assignment.
@@ -171,6 +208,11 @@ def create_row(arch: str, topology: str, seed: int, level: int, logical: int,
         "depth_change_pct_vs_unrestricted": round(100 * depth_delta / reference["depth"], 3),
         "cx_change_pct_vs_unrestricted": round(100 * cx_delta / reference["cx_count"], 3),
         "connectivity_check": "passed" if is_mapped else "not_applicable",
+        "routing_pass_name": result["routing_pass_name"],
+        "routing_swaps": result["routing_swaps"],
+        "routing_depth_delta": result["routing_depth_delta"],
+        "routing_two_qubit_ops_delta": result["routing_two_qubit_ops_delta"],
+        "routing_pass_seconds": result["routing_pass_seconds"],
     }
 
 
@@ -188,11 +230,20 @@ def summarize(rows: list[dict]) -> list[dict]:
             "logical_qubits": members[0]["logical_qubits"],
             "device_capacity_qubits": members[0]["device_capacity_qubits"],
         }
+
         for metric in (
-            "depth", "cx_count", "two_qubit_depth", "physical_qubits_touched",
-            "compiled_circuit_width_qubits", "depth_delta_vs_unrestricted",
-            "cx_delta_vs_unrestricted", "depth_change_pct_vs_unrestricted",
-            "cx_change_pct_vs_unrestricted", "transpilation_seconds",
+            "depth", "cx_count", "two_qubit_depth",
+            "physical_qubits_touched",
+            "compiled_circuit_width_qubits",
+            "depth_delta_vs_unrestricted",
+            "cx_delta_vs_unrestricted",
+            "depth_change_pct_vs_unrestricted",
+            "cx_change_pct_vs_unrestricted",
+            "transpilation_seconds",
+            "routing_swaps",
+            "routing_depth_delta",
+            "routing_two_qubit_ops_delta",
+            "routing_pass_seconds",
         ):
             numbers = [float(m[metric]) for m in members if m[metric] is not None]
             out[f"{metric}_mean"] = (
@@ -216,12 +267,21 @@ def save_csv(path: Path, rows: list[dict], columns=None) -> None:
         writer.writerows(rows)
 
 
+
 def save_chart(summary: list[dict], metric: str, ylabel: str,
-               title: str, path: Path, show_error: bool = True) -> None:
+               title: str, path: Path, show_error: bool = True,
+               routing_only: bool = False) -> None:
     """One chart per metric, bars for baseline vs optimized on each topology."""
     lookup = {(r["architecture"], r["topology"]): r for r in summary}
-    topologies = TOPOLOGY_NAMES
-    labels = ("Unrestricted", "Linear (16)", "Grid 4x4", "Heavy hex (19)")
+
+    topologies = TOPOLOGY_NAMES[1:] if routing_only else TOPOLOGY_NAMES
+
+    labels = (
+        ("Linear (16)", "Grid 4x4", "Heavy hex (19)")
+        if routing_only
+        else ("Unrestricted", "Linear (16)", "Grid 4x4", "Heavy hex (19)")
+    )
+
     bar_width = 0.36
     fig, ax = plt.subplots(figsize=(10, 5.4))
     for j, arch in enumerate(ARCHITECTURE_NAMES):
@@ -307,6 +367,25 @@ def save_metric_definitions(path: Path) -> None:
   were checked against directed coupling-map edges; `not_applicable` for the
   unrestricted reference, which has no coupling constraints.
 
+
+- **routing_swaps**: Change in the number of explicit SWAP gates
+  across the observed routing-related compiler pass. This is
+  measured directly from intermediate circuit representations,
+  not inferred from final CX counts.
+
+- **routing_depth_delta**: Change in DAG depth across the complete
+  routing-related pass. It is not necessarily caused exclusively
+  by inserted SWAP operations.
+
+- **routing_two_qubit_ops_delta**: Change in the number of two-qubit
+  operations across the observed pass.
+
+- **routing_pass_seconds**: Execution time reported by Qiskit
+  for the observed routing-related pass.
+
+- Routing metrics are not applicable to unrestricted compilation.
+  Pass-level timing measurements may include profiling overhead.
+
 The experiment compares connectivity-constrained circuit compilations. It is
 not actual device execution, and it does not model gate duration, fidelity,
 errors, calibration, or physical runtime. SWAP gates are normally translated
@@ -345,6 +424,7 @@ def record_trial(mlflow, row: dict) -> None:
             "routing_method": "sabre" if row["topology"] != "unrestricted" else "none",
             "cx_delta_interpretation": "net_compilation_change_not_swap_count",
             "connectivity_check": row["connectivity_check"],
+            "routing_pass_name": row["routing_pass_name"] or "not_applicable",
         })
         mlflow.log_params({
             "seed": row["seed"],
@@ -355,13 +435,25 @@ def record_trial(mlflow, row: dict) -> None:
                 if row["device_capacity_qubits"] is not None else "N/A"
             ),
         })
+
         metric_names = (
-            "depth", "cx_count", "two_qubit_depth", "total_operations",
-            "physical_qubits_touched", "compiled_circuit_width_qubits",
-            "transpilation_seconds", "cx_delta_vs_unrestricted",
-            "depth_delta_vs_unrestricted", "cx_change_pct_vs_unrestricted",
+            "depth",
+            "cx_count",
+            "two_qubit_depth",
+            "total_operations",
+            "physical_qubits_touched",
+            "compiled_circuit_width_qubits",
+            "transpilation_seconds",
+            "cx_delta_vs_unrestricted",
+            "depth_delta_vs_unrestricted",
+            "cx_change_pct_vs_unrestricted",
             "depth_change_pct_vs_unrestricted",
+            "routing_swaps",
+            "routing_depth_delta",
+            "routing_two_qubit_ops_delta",
+            "routing_pass_seconds",
         )
+
         mlflow.log_metrics({
             key: float(row[key])
             for key in metric_names if row[key] is not None
@@ -382,8 +474,19 @@ def record_summary(mlflow, folder: Path, summary: list[dict], args) -> None:
         for item in summary:
             prefix = f"{item['architecture']}_{item['topology']}"
             for key in (
-                "depth_mean", "cx_count_mean", "cx_change_pct_vs_unrestricted_mean",
-                "cx_delta_vs_unrestricted_mean", "physical_qubits_touched_mean",
+                "depth_mean",
+                "cx_count_mean",
+                "cx_change_pct_vs_unrestricted_mean",
+                "cx_delta_vs_unrestricted_mean",
+                "physical_qubits_touched_mean",
+                "routing_swaps_mean",
+                "routing_swaps_stdev",
+                "routing_depth_delta_mean",
+                "routing_depth_delta_stdev",
+                "routing_two_qubit_ops_delta_mean",
+                "routing_two_qubit_ops_delta_stdev",
+                "routing_pass_seconds_mean",
+                "routing_pass_seconds_stdev",
             ):
                 if item[key] is not None:
                     mlflow.log_metric(f"{prefix}_{key}", item[key])
@@ -464,6 +567,34 @@ def main() -> None:
                "Net CX change vs unrestricted (not SWAP count)",
                "Connectivity-constrained compilation: net CX difference",
                args.output_dir / "routing_overhead_cx_delta.png")
+
+    save_chart(
+        summary,
+        "routing_swaps",
+        "Observed explicit SWAP increase",
+        "SWAP count change across routing pass",
+        args.output_dir / "routing_swaps_comparison.png",
+        routing_only=True,
+    )
+
+    save_chart(
+        summary,
+        "routing_depth_delta",
+        "Depth change across routing pass",
+        "Routing-pass depth change by topology",
+        args.output_dir / "routing_depth_comparison.png",
+        routing_only=True,
+    )
+
+    save_chart(
+        summary,
+        "routing_pass_seconds",
+        "Routing-pass execution time (seconds)",
+        "Routing-pass time by topology",
+        args.output_dir / "routing_pass_time_comparison.png",
+        routing_only=True,
+    )
+
     save_qubit_resources_chart(
         summary, args.output_dir / "physical_qubit_usage.png"
     )

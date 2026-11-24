@@ -14,7 +14,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+
 import contextvars
+import json
 import logging
 import tempfile
 import time
@@ -35,6 +37,9 @@ from q8s.runtime.mlflow.qiskit.transpiler import (
     find_stage_by_id,
     process_staged_pass_manager,
 )
+
+from q8s.runtime.qprov.compiler_analysis import summarize_compiler_passes
+from q8s.runtime.qprov.compiler_graphs import plot_compiler_bottlenecks
 from q8s.runtime.qprov.graphs import (
     plot_transpilation_timeline,
     plot_resource_profiles,
@@ -305,6 +310,64 @@ def _patch_qiskit(
         }
         pass_metadata["resource_profile"] = analyze_dag(dag)
 
+
+        # Compare circuit resources with the previous compiler pass.
+        previous_metadata = (
+            ctx.compilation.passes[-1].pass_metadata
+            if ctx.compilation.passes
+            else {}
+        )
+
+        # Circuit depth and operation-count changes.
+        for metric in ("depth", "size"):
+            previous_value = previous_metadata.get(metric)
+            current_value = pass_metadata[metric]
+
+            pass_metadata[f"delta_{metric}"] = (
+                current_value - previous_value
+                if previous_value is not None
+                else None
+            )
+
+        # Two-qubit resource changes.
+        current_profile = pass_metadata["resource_profile"]
+        previous_profile = previous_metadata.get("resource_profile")
+
+        for metric in ("two_qubit_gate_count", "two_qubit_depth"):
+            previous_value = (
+                previous_profile.get(metric)
+                if previous_profile is not None
+                else None
+            )
+            current_value = current_profile.get(metric)
+
+            pass_metadata[f"delta_{metric}"] = (
+                current_value - previous_value
+                if current_value is not None and previous_value is not None
+                else None
+            )
+
+        # Changes in individual gate counts (CX, CZ, ECR, etc.).
+        current_gates = current_profile.get("gate_counts")
+        previous_gates = (
+            previous_profile.get("gate_counts")
+            if previous_profile is not None
+            else None
+        )
+
+        if isinstance(current_gates, dict) and isinstance(previous_gates, dict):
+            all_gates = set(current_gates) | set(previous_gates)
+
+            pass_metadata["delta_gate_counts"] = {
+                gate: current_gates.get(gate, 0) - previous_gates.get(gate, 0)
+                for gate in sorted(all_gates)
+                if current_gates.get(gate, 0) != previous_gates.get(gate, 0)
+            }
+        else:
+            pass_metadata["delta_gate_counts"] = None
+
+
+
         ctx.compilation.add_pass(
             pass_name=name,
             pass_index=count,
@@ -346,6 +409,32 @@ def log_to_mlflow(record: QProvRecord):
                 plt.close(resource_fig)
 
         plt.close(fig)
+        # Generate detailed compiler bottleneck reports.
+        compiler_passes = list(record.compilation.passes)
+
+        compiler_summary = summarize_compiler_passes(compiler_passes)
+        compiler_figures = plot_compiler_bottlenecks(compiler_passes)
+
+        compiler_dir = tmp / "compiler_bottlenecks"
+        compiler_dir.mkdir(exist_ok=True)
+
+        summary_file = compiler_dir / "summary.json"
+        summary_file.write_text(
+            json.dumps(compiler_summary, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
+
+        for figure_name, figure in compiler_figures.items():
+            output_file = compiler_dir / f"{figure_name}.png"
+
+            try:
+                figure.savefig(
+                    output_file,
+                    dpi=160,
+                    bbox_inches="tight",
+                )
+            finally:
+                plt.close(figure)
 
         run = mlflow.active_run()
         if run is None:

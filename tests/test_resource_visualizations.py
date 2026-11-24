@@ -172,13 +172,18 @@ class TestResourceVisualizations(unittest.TestCase):
         record = QProvRecord(compilation=compilation)
         artifacts = collect_logged_artifacts(record)
 
+
         expected = {
             "qprov_record.json",
             "transpilation_timeline.png",
             "resource_visualizations/depth.png",
             "resource_visualizations/two_qubit_depth.png",
             "resource_visualizations/two_qubit_gate_count.png",
+            "compiler_bottlenecks/summary.json",
+            "compiler_bottlenecks/stage_runtime.png",
+            "compiler_bottlenecks/slowest_passes.png",
         }
+
 
         self.assertEqual(set(artifacts), expected)
 
@@ -201,13 +206,18 @@ class TestResourceVisualizations(unittest.TestCase):
         record = QProvRecord(compilation=compilation)
         artifacts = collect_logged_artifacts(record)
 
+
         self.assertEqual(
             set(artifacts),
             {
                 "qprov_record.json",
                 "transpilation_timeline.png",
+                "compiler_bottlenecks/summary.json",
+                "compiler_bottlenecks/stage_runtime.png",
+                "compiler_bottlenecks/slowest_passes.png",
             },
         )
+
 
 
 if __name__ == "__main__":

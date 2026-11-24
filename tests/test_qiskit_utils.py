@@ -198,15 +198,140 @@ class TestPatchQiskit(unittest.TestCase):
                 )
                 self.assertEqual(recorded_pass.pass_index, 2)
                 self.assertEqual(recorded_pass.pass_duration_s, 0.25)
+
                 self.assertEqual(
                     recorded_pass.pass_metadata,
-                    {"depth": 3, "size": 4, "stage": "routing", "resource_profile": {"num_qubits": 2, "two_qubit_gate_count": 2, "two_qubit_depth": 2,
+                    {
+                        "depth": 3,
+                        "size": 4,
+                        "stage": "routing",
+                        "resource_profile": {
+                            "num_qubits": 2,
+                            "two_qubit_gate_count": 2,
+                            "two_qubit_depth": 2,
+                        },
+                        "delta_depth": None,
+                        "delta_size": None,
+                        "delta_two_qubit_gate_count": None,
+                        "delta_two_qubit_depth": None,
+                        "delta_gate_counts": None,
                     },
-                }
                 )
+
                 self.context_factory.return_value.get.return_value = None
                 with self.assertRaisesRegex(RuntimeError, "No active autolog context"):
                     callback(transpiler_pass, dag, 0.25, {}, 3)
+
+    def test_pass_manager_records_resource_deltas(self):
+        """Verify resource differences between consecutive compiler passes."""
+        circuit = utils.QuantumCircuit(2, name="delta_test")
+        circuit.h(0)
+        circuit.cx(0, 1)
+
+        manager = Mock()
+        first_pass = Mock()
+        second_pass = Mock()
+
+        first_dag = Mock()
+        first_dag.depth.return_value = 10
+        first_dag.size.return_value = 20
+
+        second_dag = Mock()
+        second_dag.depth.return_value = 8
+        second_dag.size.return_value = 23
+
+        first_profile = {
+            "num_qubits": 2,
+            "depth": 10,
+            "operation_count": 20,
+            "gate_counts": {"cx": 6, "u": 14},
+            "two_qubit_gate_count": 6,
+            "two_qubit_depth": 5,
+        }
+
+        second_profile = {
+            "num_qubits": 2,
+            "depth": 8,
+            "operation_count": 23,
+            "gate_counts": {"cx": 4, "cz": 3, "u": 16},
+            "two_qubit_gate_count": 7,
+            "two_qubit_depth": 6,
+        }
+
+        self.install(silent=True)
+
+        original = Mock(return_value="transpiled")
+
+        with (
+            patch.object(
+                utils.time,
+                "perf_counter",
+                side_effect=[10, 12.5],
+            ),
+            patch.object(
+                utils,
+                "process_staged_pass_manager",
+                return_value={},
+            ),
+            patch.object(
+                utils,
+                "find_stage_by_id",
+                return_value="routing",
+            ),
+            patch.object(
+                utils,
+                "analyze_dag",
+                side_effect=[first_profile, second_profile],
+            ),
+        ):
+            result = self.patches[
+                utils.StagedPassManager, "run"
+            ](original, manager, circuit, num_processes=1)
+
+            callback = original.call_args.kwargs["callback"]
+
+            callback(first_pass, first_dag, 0.15, {}, 1)
+            callback(second_pass, second_dag, 0.20, {}, 2)
+
+        self.assertEqual(result, "transpiled")
+
+        passes = self.record.compilation.passes
+        self.assertEqual(len(passes), 2)
+
+        first_metadata = passes[0].pass_metadata
+        second_metadata = passes[1].pass_metadata
+
+        # No previous recorded pass for the first callback.
+        for metric in (
+            "delta_depth",
+            "delta_size",
+            "delta_two_qubit_gate_count",
+            "delta_two_qubit_depth",
+            "delta_gate_counts",
+        ):
+            self.assertIsNone(first_metadata[metric])
+
+        # Verify differences between the recorded snapshots.
+        self.assertEqual(second_metadata["delta_depth"], -2)
+        self.assertEqual(second_metadata["delta_size"], 3)
+        self.assertEqual(
+            second_metadata["delta_two_qubit_gate_count"], 1
+        )
+        self.assertEqual(
+            second_metadata["delta_two_qubit_depth"], 1
+        )
+
+        self.assertEqual(
+            second_metadata["delta_gate_counts"],
+            {
+                "cx": -2,
+                "cz": 3,
+                "u": 2,
+            },
+        )
+
+        self.assertEqual(passes[0].pass_duration_s, 0.15)
+        self.assertEqual(passes[1].pass_duration_s, 0.20)
 
     def test_disabled_pass_manager_skips_provenance(self):
         self.install(disable=True)

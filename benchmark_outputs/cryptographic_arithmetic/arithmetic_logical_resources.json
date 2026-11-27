@@ -1,0 +1,250 @@
+[
+  {
+    "operation": "addition",
+    "architecture": "baseline",
+    "mcx_policy": "ccx_chain",
+    "qiskit_version": "2.1.2",
+    "source_qubits": 10,
+    "source_depth": 80,
+    "source_operations": 80,
+    "added_clean_ancillas": 3,
+    "source_gate_counts": {
+      "mcx_o1": 19,
+      "ccx_o1": 16,
+      "mcx_o29": 15,
+      "mcx_o13": 15,
+      "mcx_o5": 15
+    },
+    "shared_lowering_seconds": 0.00679599994327873,
+    "estimation_seconds": 0.01747409999370575,
+    "logical_qubits": 13,
+    "t_count": 2576,
+    "t_depth": 1328,
+    "clifford_count": 3212,
+    "magic_states": 2576,
+    "gate_counts": {
+      "cx": 2208,
+      "h": 736,
+      "t": 1472,
+      "tdg": 1104,
+      "x": 268
+    },
+    "decomposition_method": "exact_recursive_gate_definitions"
+  },
+  {
+    "operation": "subtraction",
+    "architecture": "baseline",
+    "mcx_policy": "ccx_chain",
+    "qiskit_version": "2.1.2",
+    "source_qubits": 10,
+    "source_depth": 80,
+    "source_operations": 80,
+    "added_clean_ancillas": 3,
+    "source_gate_counts": {
+      "mcx_o1": 19,
+      "ccx_o1": 16,
+      "mcx_o5": 15,
+      "mcx_o13": 15,
+      "mcx_o29": 15
+    },
+    "shared_lowering_seconds": 0.00679599994327873,
+    "estimation_seconds": 0.017550399992614985,
+    "logical_qubits": 13,
+    "t_count": 2576,
+    "t_depth": 1328,
+    "clifford_count": 3212,
+    "magic_states": 2576,
+    "gate_counts": {
+      "cx": 2208,
+      "h": 736,
+      "t": 1472,
+      "tdg": 1104,
+      "x": 268
+    },
+    "decomposition_method": "exact_recursive_gate_definitions"
+  },
+  {
+    "operation": "addition",
+    "architecture": "baseline",
+    "mcx_policy": "rccx_chain",
+    "qiskit_version": "2.1.2",
+    "source_qubits": 10,
+    "source_depth": 80,
+    "source_operations": 80,
+    "added_clean_ancillas": 3,
+    "source_gate_counts": {
+      "mcx_o1": 19,
+      "ccx_o1": 16,
+      "mcx_o29": 15,
+      "mcx_o13": 15,
+      "mcx_o5": 15
+    },
+    "shared_lowering_seconds": 0.020184799912385643,
+    "estimation_seconds": 0.012556400033645332,
+    "logical_qubits": 13,
+    "t_count": 1712,
+    "t_depth": 1057,
+    "clifford_count": 2348,
+    "magic_states": 1712,
+    "gate_counts": {
+      "cx": 1344,
+      "h": 736,
+      "t": 896,
+      "tdg": 816,
+      "x": 268
+    },
+    "decomposition_method": "exact_recursive_gate_definitions"
+  },
+  {
+    "operation": "subtraction",
+    "architecture": "baseline",
+    "mcx_policy": "rccx_chain",
+    "qiskit_version": "2.1.2",
+    "source_qubits": 10,
+    "source_depth": 80,
+    "source_operations": 80,
+    "added_clean_ancillas": 3,
+    "source_gate_counts": {
+      "mcx_o1": 19,
+      "ccx_o1": 16,
+      "mcx_o5": 15,
+      "mcx_o13": 15,
+      "mcx_o29": 15
+    },
+    "shared_lowering_seconds": 0.020184799912385643,
+    "estimation_seconds": 0.013951700064353645,
+    "logical_qubits": 13,
+    "t_count": 1712,
+    "t_depth": 1057,
+    "clifford_count": 2348,
+    "magic_states": 1712,
+    "gate_counts": {
+      "cx": 1344,
+      "h": 736,
+      "t": 896,
+      "tdg": 816,
+      "x": 268
+    },
+    "decomposition_method": "exact_recursive_gate_definitions"
+  },
+  {
+    "operation": "addition",
+    "architecture": "optimized_rccx",
+    "mcx_policy": "ccx_chain",
+    "qiskit_version": "2.1.2",
+    "source_qubits": 13,
+    "source_depth": 484,
+    "source_operations": 636,
+    "added_clean_ancillas": 0,
+    "source_gate_counts": {
+      "rccx": 288,
+      "x": 268,
+      "ccx": 80
+    },
+    "shared_lowering_seconds": 0.007344000041484833,
+    "estimation_seconds": 0.01208219991531223,
+    "logical_qubits": 13,
+    "t_count": 1712,
+    "t_depth": 1057,
+    "clifford_count": 2348,
+    "magic_states": 1712,
+    "gate_counts": {
+      "cx": 1344,
+      "h": 736,
+      "t": 896,
+      "tdg": 816,
+      "x": 268
+    },
+    "decomposition_method": "exact_recursive_gate_definitions"
+  },
+  {
+    "operation": "subtraction",
+    "architecture": "optimized_rccx",
+    "mcx_policy": "ccx_chain",
+    "qiskit_version": "2.1.2",
+    "source_qubits": 13,
+    "source_depth": 484,
+    "source_operations": 636,
+    "added_clean_ancillas": 0,
+    "source_gate_counts": {
+      "rccx_dg": 288,
+      "x": 268,
+      "ccx": 80
+    },
+    "shared_lowering_seconds": 0.007344000041484833,
+    "estimation_seconds": 0.011455500032752752,
+    "logical_qubits": 13,
+    "t_count": 1712,
+    "t_depth": 1057,
+    "clifford_count": 2348,
+    "magic_states": 1712,
+    "gate_counts": {
+      "cx": 1344,
+      "h": 736,
+      "t": 896,
+      "tdg": 816,
+      "x": 268
+    },
+    "decomposition_method": "exact_recursive_gate_definitions"
+  },
+  {
+    "operation": "addition",
+    "architecture": "optimized_rccx",
+    "mcx_policy": "rccx_chain",
+    "qiskit_version": "2.1.2",
+    "source_qubits": 13,
+    "source_depth": 484,
+    "source_operations": 636,
+    "added_clean_ancillas": 0,
+    "source_gate_counts": {
+      "rccx": 288,
+      "x": 268,
+      "ccx": 80
+    },
+    "shared_lowering_seconds": 0.008591999998316169,
+    "estimation_seconds": 0.011009700014255941,
+    "logical_qubits": 13,
+    "t_count": 1712,
+    "t_depth": 1057,
+    "clifford_count": 2348,
+    "magic_states": 1712,
+    "gate_counts": {
+      "cx": 1344,
+      "h": 736,
+      "t": 896,
+      "tdg": 816,
+      "x": 268
+    },
+    "decomposition_method": "exact_recursive_gate_definitions"
+  },
+  {
+    "operation": "subtraction",
+    "architecture": "optimized_rccx",
+    "mcx_policy": "rccx_chain",
+    "qiskit_version": "2.1.2",
+    "source_qubits": 13,
+    "source_depth": 484,
+    "source_operations": 636,
+    "added_clean_ancillas": 0,
+    "source_gate_counts": {
+      "rccx_dg": 288,
+      "x": 268,
+      "ccx": 80
+    },
+    "shared_lowering_seconds": 0.008591999998316169,
+    "estimation_seconds": 0.01166630000807345,
+    "logical_qubits": 13,
+    "t_count": 1712,
+    "t_depth": 1057,
+    "clifford_count": 2348,
+    "magic_states": 1712,
+    "gate_counts": {
+      "cx": 1344,
+      "h": 736,
+      "t": 896,
+      "tdg": 816,
+      "x": 268
+    },
+    "decomposition_method": "exact_recursive_gate_definitions"
+  }
+]

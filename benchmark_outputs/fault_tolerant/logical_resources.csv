@@ -1,0 +1,5 @@
+architecture,mcx_policy,qiskit_version,source_qubits,added_clean_ancillas,source_gate_counts,logical_qubits,t_count,t_depth,clifford_count,magic_states,gate_counts,decomposition_method
+baseline,ccx_chain,2.1.2,10,3,"{""ccx_o1"": 16, ""mcx_o1"": 19, ""mcx_o13"": 15, ""mcx_o29"": 15, ""mcx_o5"": 15}",13,2576,1328,3212,2576,"{""cx"": 2208, ""h"": 736, ""t"": 1472, ""tdg"": 1104, ""x"": 268}",exact_recursive_gate_definitions
+optimized_rccx,ccx_chain,2.1.2,13,0,"{""ccx"": 80, ""rccx"": 288, ""x"": 268}",13,1712,1057,2348,1712,"{""cx"": 1344, ""h"": 736, ""t"": 896, ""tdg"": 816, ""x"": 268}",exact_recursive_gate_definitions
+baseline,rccx_chain,2.1.2,10,3,"{""ccx_o1"": 16, ""mcx_o1"": 19, ""mcx_o13"": 15, ""mcx_o29"": 15, ""mcx_o5"": 15}",13,1712,1057,2348,1712,"{""cx"": 1344, ""h"": 736, ""t"": 896, ""tdg"": 816, ""x"": 268}",exact_recursive_gate_definitions
+optimized_rccx,rccx_chain,2.1.2,13,0,"{""ccx"": 80, ""rccx"": 288, ""x"": 268}",13,1712,1057,2348,1712,"{""cx"": 1344, ""h"": 736, ""t"": 896, ""tdg"": 816, ""x"": 268}",exact_recursive_gate_definitions

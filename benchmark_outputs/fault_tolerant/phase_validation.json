@@ -1,0 +1,107 @@
+{
+  "qiskit_version": "2.1.2",
+  "method": "exhaustive_monomial_gate_action",
+  "data_layout": {
+    "a": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "b": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "absolute_tolerance": 1e-09,
+  "configurations": [
+    {
+      "basis_inputs_checked": 1024,
+      "valid_arithmetic_inputs_checked": 289,
+      "out_of_range_b_inputs_checked": 480,
+      "clean_ancillas": true,
+      "reversible_mapping": true,
+      "phase_preserved_up_to_global": true,
+      "max_relative_phase_error": 3.08974352171127e-14,
+      "matches_baseline_extension": null,
+      "architecture": "baseline",
+      "mcx_policy": "source",
+      "logical_qubits": 10,
+      "status": "PASS"
+    },
+    {
+      "basis_inputs_checked": 1024,
+      "valid_arithmetic_inputs_checked": 289,
+      "out_of_range_b_inputs_checked": 480,
+      "clean_ancillas": true,
+      "reversible_mapping": true,
+      "phase_preserved_up_to_global": true,
+      "max_relative_phase_error": 0.0,
+      "matches_baseline_extension": true,
+      "architecture": "optimized_rccx",
+      "mcx_policy": "source",
+      "logical_qubits": 13,
+      "status": "PASS"
+    },
+    {
+      "basis_inputs_checked": 1024,
+      "valid_arithmetic_inputs_checked": 289,
+      "out_of_range_b_inputs_checked": 480,
+      "clean_ancillas": true,
+      "reversible_mapping": true,
+      "phase_preserved_up_to_global": true,
+      "max_relative_phase_error": 0.0,
+      "matches_baseline_extension": true,
+      "architecture": "baseline",
+      "mcx_policy": "ccx_chain",
+      "logical_qubits": 13,
+      "status": "PASS"
+    },
+    {
+      "basis_inputs_checked": 1024,
+      "valid_arithmetic_inputs_checked": 289,
+      "out_of_range_b_inputs_checked": 480,
+      "clean_ancillas": true,
+      "reversible_mapping": true,
+      "phase_preserved_up_to_global": true,
+      "max_relative_phase_error": 0.0,
+      "matches_baseline_extension": true,
+      "architecture": "optimized_rccx",
+      "mcx_policy": "ccx_chain",
+      "logical_qubits": 13,
+      "status": "PASS"
+    },
+    {
+      "basis_inputs_checked": 1024,
+      "valid_arithmetic_inputs_checked": 289,
+      "out_of_range_b_inputs_checked": 480,
+      "clean_ancillas": true,
+      "reversible_mapping": true,
+      "phase_preserved_up_to_global": true,
+      "max_relative_phase_error": 0.0,
+      "matches_baseline_extension": true,
+      "architecture": "baseline",
+      "mcx_policy": "rccx_chain",
+      "logical_qubits": 13,
+      "status": "PASS"
+    },
+    {
+      "basis_inputs_checked": 1024,
+      "valid_arithmetic_inputs_checked": 289,
+      "out_of_range_b_inputs_checked": 480,
+      "clean_ancillas": true,
+      "reversible_mapping": true,
+      "phase_preserved_up_to_global": true,
+      "max_relative_phase_error": 0.0,
+      "matches_baseline_extension": true,
+      "architecture": "optimized_rccx",
+      "mcx_policy": "rccx_chain",
+      "logical_qubits": 13,
+      "status": "PASS"
+    }
+  ]
+}
